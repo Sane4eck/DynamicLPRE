@@ -1,31 +1,29 @@
-# main.py
-from solver.integrator import rk4_solve
-from config.params_valve_system import make_default_params
-from models.scheme_valve_system import ValveSystemScheme
+import numpy as np
+from integrators.rk4 import rk4
+from models.valve_system import ValveSystemModel
+from core.state import StateVector
+from core.params import ModelParams
 
-def main():
-    params = make_default_params()
-    scheme = ValveSystemScheme(params)
 
-    t0 = 0.0
-    t_end = 0.01    # просто невеликий інтервал для тесту
-    dt = 1e-5       # пізніше візьмемо з твоєї WM-програми
-    n_steps = int((t_end - t0) / dt)
+params = ModelParams(
+    # всі числові параметри
+)
 
-    y0 = scheme.initial_state()
+state = StateVector(
+    names=[
+        "mBFu", "mBOx", "pBFu", "pBOx",
+        "p1Fu", "mB1Fu", "mP1Fu", "m1GgFu",
+        "pGg", "mTurb", "nPump"
+    ],
+    y0=np.array([
+        10.0, 10.0, 2e6, 1e5,
+        1e5, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0
+    ])
+)
 
-    ts, ys = rk4_solve(
-        f=scheme.rhs,
-        t0=t0,
-        y0=y0,
-        dt=dt,
-        n_steps=n_steps,
-    )
+model = ValveSystemModel(params)
 
-    print("ts shape:", ts.shape)
-    print("ys shape:", ys.shape)
-    print("y(0)   =", ys[0])
-    print("y(end) =", ys[-1])
+ts, ys = rk4(model.rhs, state.y0, 0.0, 0.01, 1e-5)
 
-if __name__ == "__main__":
-    main()
+print("y(end) =", ys[-1])
