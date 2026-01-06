@@ -13,7 +13,7 @@ t0 = time.perf_counter()
 
 # твої налаштування
 endTime = 1.0
-dt = 1e-9
+dt = 1e-5
 countPoint = 1000
 stepPrint = max(int(abs((0.0 - endTime))/(dt*countPoint)), 1)
 
