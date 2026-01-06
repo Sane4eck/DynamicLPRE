@@ -19,12 +19,13 @@ pars = {
     "j13": 37852.4,
     "rho": 814.41,
     "p2": 1e5,
-    "p3": 1e5
+    "p3": 1e5,
+    "C1": 1.27465e-9
 }
 
 # ===== ПОЧАТКОВІ УМОВИ =====
 # y = np.array([0.0, 0.0, 0.0])   # {m01, m12, m13}
-y = np.array([1e-12, 1e-12, 1e-12])
+y = np.array([0, 0, 0, 1e5])
 
 
 # ===== ЗБІР РЕЗУЛЬТАТІВ =====
@@ -36,11 +37,12 @@ for j in range(n):
     t = TIME
 
     if j % 1 == 0:
-        _, p1, p0 = Prav(t, y, pars)
-        result.append((t, y[0], y[1], y[2], p1, p0))
+        _, p0 = Prav(t, y, pars)
+        result.append((t, y[0], y[1], y[2], y[3], p0))
 
     # ---- інтегрування ----
     y = RK4(Prav, y, TIME, dt, pars)
+    # y += dt * Prav(t, y, pars)
 
     TIME += dt
 
