@@ -16,3 +16,16 @@ class Params:
 
     p2: float = 1e5
     p3: float = 1e5
+
+    def as_tuple(self):
+        # порядок ФІКСОВАНИЙ і використовується всюди
+        return (self.rhoFu, self.C1,
+                self.a01, self.a12, self.a13,
+                self.j01, self.j12, self.j13,
+                self.p2, self.p3)
+
+    def as_tuple(self):
+        return (self.rhoFu, self.C1,
+                self.a01, self.a12, self.a13,
+                self.j01, self.j12, self.j13,
+                self.p2, self.p3)

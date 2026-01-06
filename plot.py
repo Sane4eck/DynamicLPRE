@@ -1,3 +1,4 @@
+# plot.py
 import matplotlib.pyplot as plt
 def plot_results(result):
     t = [r["time"] for r in result]
