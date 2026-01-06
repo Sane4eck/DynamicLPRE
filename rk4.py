@@ -1,5 +1,4 @@
-import numpy as np
-
+#rk4.py
 def rk4(f, y, t, h):
     k1 = h * f(t, y)
     k2 = h * f(t + 0.5*h, y + 0.5*k1)

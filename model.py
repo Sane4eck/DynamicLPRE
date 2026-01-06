@@ -1,3 +1,4 @@
+#model.py
 def linear_law(t, val0, valN, t1, t2):
     if t <= t1:
         return val0
