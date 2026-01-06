@@ -6,6 +6,7 @@ def plot_results(result):
     m01 = [r["m01"] for r in result]
     m12 = [r["m12"] for r in result]
     m13 = [r["m13"] for r in result]
+
     plt.figure()
     plt.plot(t, p0, label="p0")
     plt.plot(t, p1, label="p1")

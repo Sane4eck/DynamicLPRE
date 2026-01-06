@@ -6,7 +6,7 @@ from core.integrators import rk4_step
 from core.result import Result
 import time
 
-dt = 1e-4
+dt = 1e-5
 endTime = 1.0
 
 state = State()

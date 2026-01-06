@@ -1,4 +1,5 @@
 # core/model.py
+import numpy as np
 from math import fabs
 
 class HydraulicModel:
@@ -11,13 +12,23 @@ class HydraulicModel:
         else:
             return 218.602e5
 
-    def rhs(self, s, p):
-        s.p0 = self.linear_law(s.time)
+    # --- універсальний інтерфейс ---
+    def pack(self, s):
+        return np.array([s.m01, s.m12, s.m13, s.p1])
 
-        s.dm01 = (s.p0 - s.p1 - p.a01/p.rhoFu * fabs(s.m01)*s.m01) / p.j01
-        s.dm12 = (s.p1 - p.p2 - p.a12/p.rhoFu * fabs(s.m12)*s.m12) / p.j12
-        s.dm13 = (s.p1 - p.p3 - p.a13/p.rhoFu * fabs(s.m13)*s.m13) / p.j13
-        s.dp1  = (s.m01 - s.m12 - s.m13) / p.C1
+    def unpack(self, s, y):
+        s.m01, s.m12, s.m13, s.p1 = y
+
+    def rhs_vec(self, s, params):
+        p0 = self.linear_law(s.time)
+        s.p0 = p0
+
+        dm01 = (p0 - s.p1 - params.a01/params.rhoFu*abs(s.m01)*s.m01) / params.j01
+        dm12 = (s.p1 - params.p2 - params.a12/params.rhoFu*abs(s.m12)*s.m12) / params.j12
+        dm13 = (s.p1 - params.p3 - params.a13/params.rhoFu*abs(s.m13)*s.m13) / params.j13
+        dp1  = (s.m01 - s.m12 - s.m13) / params.C1
+
+        return np.array([dm01, dm12, dm13, dp1])
 
     def clamp(self, s):
         LIMIT = 1e6
