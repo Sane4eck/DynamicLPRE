@@ -1,11 +1,21 @@
 # main.py
+import os, argparse
+
+ap = argparse.ArgumentParser()
+ap.add_argument("--system", default="sys_C=0")
+# ap.add_argument("--system", default="sys_with_C")
+args = ap.parse_args()
+
+os.environ["DYNAMICS_SYSTEM"] = args.system
+
+
 from core.state import State
 from core.system import Params, initial_y
 from core.model import HydraulicModel
 from core.result import Result
 import time
 
-dt = 1e-7
+dt = 1e-8
 endTime = 1.0
 
 state = State(time=0.0, y=initial_y())
