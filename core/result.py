@@ -1,4 +1,6 @@
 # core/result.py
+from core.system import VAR_NAMES, AUX_NAMES
+
 class Result:
     def __init__(self, t, y, dy, aux):
         self.t = t
@@ -8,19 +10,24 @@ class Result:
 
     @property
     def data(self):
-        # plot.py очікує list[dict] з p0/p1 в bar
+        dy_names = tuple("d" + n for n in VAR_NAMES)
         out = []
         for i in range(len(self.t)):
-            out.append({
-                "time": float(self.t[i]),
-                "m01":  float(self.y[i, 0]),
-                "m12":  float(self.y[i, 1]),
-                "m13":  float(self.y[i, 2]),
-                "p1":   float(self.y[i, 3]) * 1e-5,   # bar
-                "p0":   float(self.aux[i, 0]) * 1e-5, # bar
-                "dm01": float(self.dy[i, 0]),
-                "dm12": float(self.dy[i, 1]),
-                "dm13": float(self.dy[i, 2]),
-                "dp1":  float(self.dy[i, 3]),
-            })
+            row = {"time": float(self.t[i])}
+
+            # y
+            for j, name in enumerate(VAR_NAMES):
+                val = float(self.y[i, j])
+                row[name] = val * 1e-5 if name.startswith("p") else val  # p* -> bar
+
+            # aux
+            for j, name in enumerate(AUX_NAMES):
+                val = float(self.aux[i, j])
+                row[name] = val * 1e-5 if name.startswith("p") else val  # p* -> bar
+
+            # dy
+            for j, name in enumerate(dy_names):
+                row[name] = float(self.dy[i, j])
+
+            out.append(row)
         return out
