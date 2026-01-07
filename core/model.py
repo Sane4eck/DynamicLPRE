@@ -8,7 +8,8 @@ from core.system import (
     initial_y
 )
 
-@njit(cache=True)
+# @njit(cache=True)
+@njit(cache=False)
 def simulate_rk4(endTime, dt, stepPrint, y0, p):
     n = int(endTime / dt)
     nsave = n // stepPrint + 1
