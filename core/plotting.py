@@ -2,7 +2,7 @@
 import os
 import matplotlib.pyplot as plt
 
-from core.system import VAR_NAMES, AUX_NAMES
+from core.system import Y_ORDER, AUX_ORDER
 
 def _is_pressure(name: str) -> bool:
     # p*, dp* конвертуємо в bar (або bar/s)
@@ -14,7 +14,7 @@ def save_all_plots(res, out_dir="out/plots", show=False):
     t = res.t
 
     # y
-    for j, name in enumerate(VAR_NAMES):
+    for j, name in enumerate(Y_ORDER):
         y = res.y[:, j]
         ylabel = name
         yplot = y * 1e-5 if _is_pressure(name) else y
@@ -32,7 +32,7 @@ def save_all_plots(res, out_dir="out/plots", show=False):
             plt.close(fig)
 
     # aux
-    for j, name in enumerate(AUX_NAMES):
+    for j, name in enumerate(AUX_ORDER):
         a = res.aux[:, j]
         ylabel = name
         aplot = a * 1e-5 if _is_pressure(name) else a
@@ -50,7 +50,7 @@ def save_all_plots(res, out_dir="out/plots", show=False):
             plt.close(fig)
 
     # dy
-    dy_names = tuple("d" + n for n in VAR_NAMES)
+    dy_names = tuple("d" + n for n in Y_ORDER)
     for j, name in enumerate(dy_names):
         d = res.dy[:, j]
         ylabel = name
