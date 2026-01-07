@@ -12,10 +12,6 @@ except Exception:
         return wrap
 
 
-# =========================
-# 1) ТУТ ТИ МІНЯЄШ МОДЕЛЬ
-# =========================
-
 @njit(cache=True)
 def linear_law(t, val0, valN, t1, t2):
     if t <= t1:
@@ -72,10 +68,6 @@ def clamp_y_inplace(y):
     m01, m12, m13, p1 = clamp_locals(y[0], y[1], y[2], y[3])
     y[0] = m01; y[1] = m12; y[2] = m13; y[3] = p1
 
-
-# =========================
-# 2) ШВИДКИЙ СОЛВЕР RK4 (не чіпаєш при зміні моделі)
-# =========================
 
 @njit(cache=True)
 def simulate_rk4(endTime, dt, stepPrint, y0, p):
