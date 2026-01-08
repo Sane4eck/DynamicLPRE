@@ -1,8 +1,8 @@
 # core/system.py
 import numpy as np
-from dataclasses import dataclass
-
 from numba import njit
+from dataclasses import dataclass, fields, astuple
+from core.systems.sys_with_C import *
 
 Y_ORDER = ("m01", "m12", "m13","p1")  # інтегровані (y)
 AUX_ORDER = ("p0",)  # допоміжні (aux)
@@ -10,28 +10,13 @@ AUX_ORDER = ("p0",)  # допоміжні (aux)
 NY = len(Y_ORDER)
 NAUX = len(AUX_ORDER)
 
-# індекси y
-I_m01 = 0
-I_m12 = 1
-I_m13 = 2
-I_p1  = 3
-
-# індекси aux
-A_p0 = 0
-
-PARAM_ORDER = (
-    "rhoFu", "C1",
-    "a01", "a12", "a13",
-    "j01", "j12", "j13",
-    "p2", "p3",
-)
-
-for _i, _name in enumerate(PARAM_ORDER):
-    globals()[f"P_{_name}"] = _i
-del _i, _name
 
 @dataclass(frozen=True)
 class Params:
+    pf_tnk: float = 0.0
+    po_tnk: float = 0.0
+    rf_amp_2: float = 0.0
+
     rhoFu: float = 814.41
     C1: float = 1.27465e-9
 
@@ -47,12 +32,22 @@ class Params:
     p3: float = 1e5
 
     def as_tuple(self):
-        return (
-            self.rhoFu, self.C1,
-            self.a01, self.a12, self.a13,
-            self.j01, self.j12, self.j13,
-            self.p2, self.p3,
-        )
+        # порядок = порядок полів dataclass
+        return astuple(self)
+
+# Автогенерація порядку і індексів
+PARAM_ORDER = tuple(f.name for f in fields(Params))
+
+def _declare_indices():
+    for i, name in enumerate(Y_ORDER):
+        globals()[f"I_{name}"] = i
+    for i, name in enumerate(AUX_ORDER):
+        globals()[f"A_{name}"] = i
+    for _i, _name in enumerate(PARAM_ORDER):
+        globals()[f"P_{_name}"] = _i
+
+_declare_indices()
+del _declare_indices
 
 
 def initial_y():
