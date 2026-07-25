@@ -2,7 +2,8 @@
 import os
 import importlib
 
-DEFAULT_SYSTEM = "sys_C=0"
+# DEFAULT_SYSTEM = "sys_comb_Ceas_Hai"
+DEFAULT_SYSTEM = "sys_with_C"
 
 def _load_module(name: str):
     return importlib.import_module(f"core.systems.{name}")

@@ -5,7 +5,7 @@ import numpy as np
 from numba import njit
 
 from core.physics import linear_law, f_valve
-from core.systems.sys_test import *
+from core.systems.sys_comb_Ceas_Hai import *
 from dataclasses import dataclass, fields, astuple
 
 Y_ORDER = (
@@ -17,6 +17,7 @@ Y_ORDER = (
     "pf_1", "pf_2", "pf_3", "pgg",
     # volume
     # other
+    "massf_b_1"
 )
 
 AUX_ORDER = (
@@ -30,11 +31,11 @@ AUX_ORDER = (
     # інерційні втрати
     "if_b_1", "if_1_2", "if_2_3", "if_p_3", "if_3_gg",
     # витрати
-    "mo_b_gg",
+    "mo_tnk_gg",
     # напір насосів
     "hf_pmp",
     # тиски
-    "pf_tnk","pf_p_out","pf_pmp_out_nom", "pgg_var", "pf_b", "po_tnk",
+    "pf_tnk", "pf_p_out", "pgg_var", "pf_b", "po_tnk",
     # флаг заповнення
     # флаги горіння
     "fb_gg", "fstp_gg",
@@ -44,7 +45,7 @@ AUX_ORDER = (
     # torque pmp and trb
     # Lad turbine
     # other
-    "km_gg", "R_gg", "T_gg", "k_gg",
+    "km_gg", "R_gg", "T_gg", "k_gg"
 )
 
 NY = len(Y_ORDER)
@@ -53,12 +54,18 @@ NAUX = len(AUX_ORDER)
 
 @dataclass(frozen=True)
 class Params:
-
     pf_tnk: float = 2.24e5
     po_tnk: float = 3.8e5
-    pf_pmp_out_nom: float = 2.18602e7
-
-
+    pf_pmp_out: float = 2.18602e7
+    mo_tnk_gg: float = 5.643
+    rho_f: float = 821.82
+    vf_b: float = 3e-4
+    p_env: float = 1e5
+    pf_b: float = 120e5
+    #calc params
+    rf_v1: float =
+    ff_v1:float =
+    cf_r_v1: float = rf_v1/(1/ff_v1**2)
 
     def as_tuple(self):
         # порядок = порядок полів dataclass
@@ -101,9 +108,22 @@ def clamp_y_inplace(y):
 @njit(cache=False)
 def rhs(t, y, p, dy, aux):
     clamp_y_inplace(y)
-    t_bound_1=0.5
-    t_bound_2=1
-    pf_p_out = linear_law(t, pf_tnk, pf_pmp_out_nom, t_bound_1, t_bound_2)
+
+    # Input params
+    t_bound_1 = 0.5
+    t_bound_2 = 1
+    A_pf_p_out = linear_law(t, P_pf_tnk, P_pf_pmp_out, t_bound_1, t_bound_2)
+    A_mo_tnk_gg = linear_law(t, 0, P_mo_tnk_gg, t_bound_1, t_bound_2)
+
+    # ball fu
+    dy[I_massf_b_1] = -A_mo_tnk_gg
+    A_vf_b = P_vf_b - abs(y[I_massf_b_1] / P_rho_f)
+    A_pf_b = P_pf_b
+    if A_vf_b <= P_vf_b * 0.01: A_pf_b = P_p_env
+
+    # resistant
+    A_rf_v1 = def_resist_valve_ot_x(y[I_xf_v1], P_cf_r_v1)
+    A_rf_b_1 = P_rf_b_v1 + A_rf_v1 + P_rf_v1_1
 
 
     rpm = y[I_omega] / (2 * math.pi / 60)

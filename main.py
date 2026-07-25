@@ -3,7 +3,7 @@ import os, argparse
 
 ap = argparse.ArgumentParser()
 # ap.add_argument("--system", default="sys_C_0")
-ap.add_argument("--system", default="sys_with_C")
+ap.add_argument("--system",default="sys_with_C")
 args = ap.parse_args()
 
 os.environ["DYNAMICS_SYSTEM"] = args.system

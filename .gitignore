@@ -1,4 +1,8 @@
 .venv/
+.venvMC/
 out/
 data/
 plots/
+exemles/
+sys_comb_Ceas_Hai.py
+sys_comb_Ceas_Hai.pyi

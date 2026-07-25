@@ -4,6 +4,7 @@ import math
 import numpy as np
 from numba import njit
 
+from core.physics import linear_law, f_valve
 from core.systems.sys_test import *
 from dataclasses import dataclass, fields, astuple
 
@@ -61,35 +62,17 @@ AUX_ORDER = (
     "PI_st_trb", "u_trb", "u_st_trb", "cad_trb", "cad_st_trb",
 )
 
-PARAM_ORDER = (
-    "pf_tnk", "po_tnk", "rf_amp_2",
-    "rhoFu", "C1",
-    "a01", "a12", "a13",
-    "j01", "j12", "j13",
-    "p2", "p3",
-)
 NY = len(Y_ORDER)
 NAUX = len(AUX_ORDER)
 
 @dataclass(frozen=True)
 class Params:
-    pf_tnk: float = 0.0
-    po_tnk: float = 0.0
-    rf_amp_2: float = 0.0
+    vf_amp_2: float = 3.37596e-5
+    vf_2_ch: float = 8.0927e-6
+    vf_2_gg: float = 2.5899e-5
 
-    rhoFu: float = 814.41
-    C1: float = 1.27465e-9
-
-    a01: float = 7.15292e8
-    a12: float = 5.8531e12
-    a13: float = 1.96184e12
-
-    j01: float = 10115.2
-    j12: float = 32228.9
-    j13: float = 37852.4
-
-    p2: float = 1e5
-    p3: float = 1e5
+    pf_tnk: float = 2.24e5
+    po_tnk: float = 3.8e5
 
     def as_tuple(self):
         # порядок = порядок полів dataclass
@@ -109,21 +92,8 @@ def _declare_indices():
 _declare_indices()
 del _declare_indices
 
-
 def initial_y():
     return np.array([0.0, 0.0, 0.0, 1e5], dtype=np.float64)
-
-
-# @njit(cache=True)
-@njit(cache=False)
-def linear_law(t, val0, valN, t1, t2):
-    if t <= t1:
-        return val0
-    elif t <= t2:
-        return val0 + (valN - val0) / (t2 - t1) * (t - t1)
-    else:
-        return valN
-
 
 # @njit(cache=True)
 @njit(cache=False)
@@ -132,15 +102,8 @@ def clamp_y_inplace(y):
     limit_p = 300e5
     limit_pEnv = 1e5
     # обмеження Витрати
-    if y[I_mas_n2] > limit_m:  y[I_m01] = limit_m
-    if y[I_m01] < -limit_m: y[I_m01] = -limit_m
-    if y[I_m12] > limit_m:  y[I_m12] = limit_m
-    if y[I_m12] < -limit_m: y[I_m12] = -limit_m
-    if y[I_m13] > limit_m:  y[I_m13] = limit_m
-    if y[I_m13] < -limit_m: y[I_m13] = -limit_m
-
-    if y[I_p1] > limit_p: y[I_p1] = limit_p
-    if y[I_p1] < limit_pEnv: y[I_p1] = limit_pEnv
+    if y[I_mas_n2] > limit_m:  y[I_mas_n2] = limit_m
+    if y[I_mas_n2] < -limit_m: y[I_mas_n2] = -limit_m
 
 
 # @njit(cache=True)
@@ -148,8 +111,13 @@ def clamp_y_inplace(y):
 def rhs(t, y, p, dy, aux):
     clamp_y_inplace(y)
 
-    rpm = y[i_omega]/(2*math.pi/60)
+    rpm = y[I_omega]/(2*math.pi/60)
+    power = 0.1
+    aux[A_cvf_amp_2]=min((y[I_vf_amp_2]/p[P_vf_amp_2]),1)**power
+    aux[A_cvf_2_ch] = min((y[I_vf_2_ch]/p[P_vf_2_ch]),1)**power
+    aux[A_cvf_2_gg] = min((y[I_vf_2_gg]/p[P_vf_2_gg]),1)**power
 
+    aux[A_rf_vlv_amp] = 1/(2*f_valve[f1,f2,t1,t2,dt1,dt2,t]**2)
 
     rhoFu = p[P_rhoFu]
     C1 = p[P_C1]

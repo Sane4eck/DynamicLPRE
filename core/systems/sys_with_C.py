@@ -2,6 +2,8 @@
 import numpy as np
 from numba import njit
 from dataclasses import dataclass, fields, astuple
+
+from core.physics import linear_law
 from core.systems.sys_with_C import *
 
 Y_ORDER = ("m01", "m12", "m13","p1")  # інтегровані (y)
@@ -52,16 +54,6 @@ del _declare_indices
 
 def initial_y():
     return np.array([0.0, 0.0, 0.0, 1e5], dtype=np.float64)
-
-# @njit(cache=True)
-@njit(cache=False)
-def linear_law(t, val0, valN, t1, t2):
-    if t <= t1:
-        return val0
-    elif t <= t2:
-        return val0 + (valN - val0) / (t2 - t1) * (t - t1)
-    else:
-        return valN
 
 
 # @njit(cache=True)
