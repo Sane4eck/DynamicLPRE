@@ -62,7 +62,7 @@ def simulate_rk4(endTime, dt, stepPrint, y0, p):
         for j in range(NY):
             y[j] = y[j] + (dt/6.0)*(k1[j] + 2.0*k2[j] + 2.0*k3[j] + k4[j])
 
-        clamp_y_inplace(y)
+        clamp_y_inplace(y,aux)
         # t += dt
 
     return t_out[:k], y_out[:k], dy_out[:k], aux_out[:k]

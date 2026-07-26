@@ -3,7 +3,8 @@ import os, argparse
 
 ap = argparse.ArgumentParser()
 # ap.add_argument("--system", default="sys_C_0")
-ap.add_argument("--system",default="sys_with_C")
+# ap.add_argument("--system",default="sys_with_C")
+ap.add_argument("--system",default="sys_two_phase")
 args = ap.parse_args()
 
 os.environ["DYNAMICS_SYSTEM"] = args.system
@@ -23,7 +24,7 @@ params = Params()
 model = HydraulicModel()
 
 t0 = time.perf_counter()
-t_arr, y_arr, dy_arr, aux_arr = model.simulate(state, params, dt, endTime, countPoint=3000, backend="numba")
+t_arr, y_arr, dy_arr, aux_arr = model.simulate(state, params, dt, endTime, countPoint=10000, backend="numba")
 res = Result(t_arr, y_arr, dy_arr, aux_arr)
 t1 = time.perf_counter()
 print(f"Execution time: {t1-t0:.2f} s")

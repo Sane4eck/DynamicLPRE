@@ -63,9 +63,9 @@ class Params:
     p_env: float = 1e5
     pf_b: float = 120e5
     #calc params
-    rf_v1: float =
-    ff_v1:float =
-    cf_r_v1: float = rf_v1/(1/ff_v1**2)
+    # rf_v1: float =
+    # ff_v1:float =
+    # cf_r_v1: float = rf_v1/(1/ff_v1**2)
 
     def as_tuple(self):
         # порядок = порядок полів dataclass
