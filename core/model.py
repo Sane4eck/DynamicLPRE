@@ -2,13 +2,14 @@
 import numpy as np
 from numba import njit
 
+import core.system as system
 from core.system import (
     NY, NAUX,
     rhs, clamp_y_inplace,
     initial_y
 )
 
-# @njit(cache=True)
+
 @njit(cache=False)
 def simulate_rk4(endTime, dt, stepPrint, y0, p):
     n = int(endTime / dt)
@@ -43,40 +44,44 @@ def simulate_rk4(endTime, dt, stepPrint, y0, p):
                 aux_out[k, j] = aux[j]
             k += 1
 
-        # k2
         for j in range(NY):
             yt[j] = y[j] + 0.5*dt*k1[j]
         rhs(t + 0.5*dt, yt, p, k2, aux)
 
-        # k3
         for j in range(NY):
             yt[j] = y[j] + 0.5*dt*k2[j]
         rhs(t + 0.5*dt, yt, p, k3, aux)
 
-        # k4
         for j in range(NY):
             yt[j] = y[j] + dt*k3[j]
         rhs(t + dt, yt, p, k4, aux)
 
-        # update
         for j in range(NY):
             y[j] = y[j] + (dt/6.0)*(k1[j] + 2.0*k2[j] + 2.0*k3[j] + k4[j])
 
-        clamp_y_inplace(y,aux)
-        # t += dt
+        clamp_y_inplace(y, aux)
 
     return t_out[:k], y_out[:k], dy_out[:k], aux_out[:k]
 
 
 class HydraulicModel:
     def simulate(self, state0, params, dt, endTime, countPoint=1000, backend="numba"):
-        stepPrint = max(int(abs((state0.time - endTime)) / (dt * countPoint)), 1)
+        if backend != "numba":
+            raise ValueError(f"Unsupported backend: {backend}")
 
-        # y0
+        duration = abs(state0.time - endTime)
+        stepPrint = max(int(duration / (dt * countPoint)), 1)
+
         if getattr(state0, "y", None) is None:
-            y0 = initial_y()
+            initializer = getattr(system, "initial_y_from_params", None)
+            y0 = initializer(params) if initializer is not None else initial_y()
         else:
             y0 = np.asarray(state0.y, dtype=np.float64)
 
         p = params.as_tuple()
+
+        custom_simulator = getattr(system, "simulate_system", None)
+        if custom_simulator is not None:
+            return custom_simulator(state0.time, endTime, dt, stepPrint, y0, p)
+
         return simulate_rk4(endTime, dt, stepPrint, y0, p)
